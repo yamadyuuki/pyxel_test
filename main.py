@@ -1,3 +1,5 @@
+import requests
+
 def main():
     print("Hello from pyxel-game!")
 
