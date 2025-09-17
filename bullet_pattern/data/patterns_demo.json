@@ -1,0 +1,46 @@
+{
+  "patterns": {
+    "circular_16": {
+      "type": "circular",
+      "bullet_speed": 1.8,
+      "count": 16,
+      "spread_deg": 360,
+      "cooldown": 30
+    },
+    "aimed_burst": {
+      "type": "aimed",
+      "bullet_speed": 2.4,
+      "count": 5,
+      "interval": 5  
+    },
+    "spinner": {
+      "type": "spinner",
+      "bullet_speed": 1.6,
+      "count": 24,
+      "angular_speed_deg": 3, 
+      "cooldown": 3
+    },
+    "spin": {
+      "type": "spinner",
+      "bullet_speed": 1.6,
+      "count": 24,
+      "angular_speed_deg": 6, 
+      "cooldown": 3
+    },
+        "rolling_fire_1943": {
+      "type": "rolling_fire",
+      "speed_final": 0.5,
+      "pre_wait": 20,
+      "turn_rel_deg": -90,
+      "turn_term": 4,
+      "accel_term": 60,
+      "micro_wait": 4,
+      "seq_deg": 15,
+      "post_wait": 80,
+      "fire_interval": 2,
+      "life": 360,
+      "rand_wait_amplitude": 20,
+      "seed": 0
+    }
+}
+}

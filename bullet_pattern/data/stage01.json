@@ -1,0 +1,16 @@
+{
+  "enemies": [
+    {
+      "spawn_frame": 30,
+      "x": 100, "y": 30,
+      "hp": 9999,
+      "script": [
+        { "at": 60,  "cmd": "use",  "pattern": "circular_16" },
+        { "at": 240, "cmd": "use",  "pattern": "aimed_burst" },
+        { "at": 360, "cmd": "use",  "pattern": "spinner" },
+        { "at": 600, "cmd": "use",  "pattern": "rolling_fire_1943" },         
+        { "at": 1200, "cmd": "stop" }
+      ]
+    }
+  ]
+}
