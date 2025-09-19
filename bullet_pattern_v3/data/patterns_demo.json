@@ -1,0 +1,149 @@
+{
+  "patterns": {
+    "circular_16": {
+      "type": "circular",
+      "bullet_speed": 1.8,
+      "count": 16,
+      "spread_deg": 360,
+      "cooldown": 30
+    },
+    "aimed_burst": {
+      "type": "aimed",
+      "bullet_speed": 2.4,
+      "count": 5,
+      "interval": 5  
+    },
+    "spinner": {
+      "type": "spinner",
+      "bullet_speed": 1.6,
+      "count": 24,
+      "angular_speed_deg": 3, 
+      "cooldown": 3
+    },
+    "spin": {
+      "type": "spinner",
+      "bullet_speed": 1.6,
+      "count": 24,
+      "angular_speed_deg": 6, 
+      "cooldown": 3
+    },
+        "rolling_fire_1943": {
+      "type": "rolling_fire",
+      "speed_final": 0.5,
+      "pre_wait": 20,
+      "turn_rel_deg": -90,
+      "turn_term": 4,
+      "accel_term": 60,
+      "micro_wait": 4,
+      "seq_deg": 15,
+      "post_wait": 80,
+      "fire_interval": 0,
+      "life": 360,
+      "rand_wait_amplitude": 20,
+      "seed": 0
+    },
+    "g_darius_homing_laser": {
+      "type": "homing_laser",
+      "base_spread_deg": 120,
+      "repeats": 8,
+      "cluster": 9,
+      "interval_in_cluster": 1,
+      "wait_between": 10,
+      "slow_speed": 2.0,
+      "slow_term": 30,
+      "coast_wait": 100,
+      "fast_speed": 5.0,
+      "fast_term": 100,
+      "aim_term": 60,
+      "aim_step_max_deg": 6,
+      "seed": 0
+    },
+    "guwange_circle_fire": {
+      "type": "circle_fire",
+      "ring_count": 18,
+      "step_deg": 20,
+      "shell_speed": 6.0,
+      "shell_delay": 3,
+      "child_abs_deg": null,     
+      "child_speed": 1.5,
+      "color_shell": 10,
+      "color_child": 8,
+      "seed": 0
+    },
+        "aimed_5way_slow": {
+      "type": "nway_aimed",
+      "bullet_speed": 0.5,
+      "ways": 5,
+      "spread_deg": 40,
+      "cooldown": 20,
+      "color": 10
+    },
+    "aimed_6way_slow": {
+      "type": "nway_aimed",
+      "bullet_speed": 0.5,
+      "ways": 6,
+      "spread_deg": 48,
+      "cooldown": 20,
+      "color": 11
+    },
+    "two_split_basic": {
+      "type": "two_split",
+      "aimed": true,            
+      "initial_speed": 0.5,     
+      "initial_offset_deg": 8,  
+      "travel_frames": 60,      
+      "child_speed": 0.5,       
+      "child_fan_deg": 45,      
+      "cooldown": 20,             
+      "color_parent": 11,
+      "color_child": 14,
+      "seed": 0
+    },
+    "gravity_attract_aim": {
+      "type": "gravity",
+      "rate": 8,
+      "speed0": 1.2,
+      "angle_mode": "aim",
+      "g": 0.03,
+      "grav_mode": "attract",
+      "max_speed": 2.2,
+      "color": 12,
+      "life": -1
+    },
+    "gravity_repel_ring": {
+      "type": "gravity",
+      "rate": 6,
+      "speed0": 1.0,
+      "angle_mode": "fixed",
+      "fixed_deg": 360,
+      "g": 0.02,
+      "grav_mode": "repel",
+      "max_speed": 2.5,
+      "color": 8
+    },
+
+    "speed_change_pause_dash": {
+      "type": "speed_change",
+      "rate": 10,
+      "speed0": 1.6,
+      "angle_mode": "aim",
+      "steps": [
+        { "at": 20, "speed": 0.6 },
+        { "at": 40, "speed": 0.0 },   
+        { "at": 120, "speed": 2.4 }    
+      ],
+      "color": 9
+    },
+
+    "prox_burst_scatter16": {
+      "type": "proximity_burst",
+      "rate": 18,
+      "approach_speed": 1.1,
+      "angle_mode": "aim",
+      "radius": 18,
+      "child": { "count": 16, "speed": 1.0, "color": 10 },
+      "once": true,
+      "color_parent": 11
+    }
+}
+}
