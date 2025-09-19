@@ -2,7 +2,7 @@
   "enemies": [
     {
       "spawn_frame": 30,
-      "x": 100, "y": 30,
+      "x": 100, "y": 50,
       "hp": 9999,
       "script": [
         { "at": 60,  "cmd": "use",  "pattern": "circular_16" },
@@ -17,5 +17,6 @@
         { "at": 1200, "cmd": "stop" }
       ]
     }
-  ]
+  ],
+  "player": { "x": 100, "y": 150}
 }
