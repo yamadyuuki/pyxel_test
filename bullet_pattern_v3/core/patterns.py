@@ -492,7 +492,6 @@ class GravityBullet(BasePattern):
 class SpeedChangePattern(BasePattern):
     """
     時間経過で“速さ”を段階変更する弾を連射。
-    steps: [{"at":30,"speed":0.2},{"at":60,"speed":0.0},{"at":90,"speed":2.5}]
     """
     def __init__(self, rate=12, speed0=1.5, angle_mode="aim", fixed_deg=90.0,
                  steps=None, color=9, life=-1):
@@ -559,6 +558,8 @@ class ProximityBurstPattern(BasePattern):
             }
             em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.cP, life=self.life, behavior=behavior)
         self.t += 1
+
+
 
 class PatternFactory:
     def __init__(self, patterns_data: dict):
@@ -678,5 +679,7 @@ class PatternFactory:
                 color_parent      = cfg.get("color_parent", 11),
                 life              = cfg.get("life", -1),
             )
+
+
 
         raise ValueError(f"unknown pattern: {typ}")
