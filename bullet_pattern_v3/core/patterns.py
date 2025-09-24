@@ -614,7 +614,35 @@ class CircularStopAimed(BasePattern):
                     em.x, em.y, vx, vy, r=1, c=self.color, life=self.life, behavior=behavior
                 )
         self.t += 1
-            
+
+class RandomRadialSpray(BasePattern):
+    """
+    敵中心から360度ランダム方向に連続発射するスプリンクラー系。
+    - bullet_speed: 弾速
+    - rate: 何フレームごとに撃つか（1で毎フレーム）
+    - per_shot: 1回の発射で何発出すか
+    - color: 弾の色（Pyxelカラー）
+    - life: 寿命（-1は無限）
+    - seed: 乱数シード（固定すると毎回同じ見た目）
+    """
+    def __init__(self, bullet_speed=1.6, rate=2, per_shot=1, color=7, life=-1, seed=0):
+        import random
+        self.v = float(bullet_speed)
+        self.rate = max(1, int(rate))
+        self.n = max(1, int(per_shot))
+        self.c = int(color)
+        self.life = int(life)
+        self.rng = random.Random(seed)
+        self.t = 0
+
+    def update_and_fire(self, em, ctx):
+        if self.t % self.rate == 0:
+            for _ in range(self.n):
+                ang = self.rng.random() * 2.0 * math.pi  # 0..2π の一様乱数
+                vx, vy = math.cos(ang) * self.v, math.sin(ang) * self.v
+                em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.c, life=self.life)
+        self.t += 1
+
 class PatternFactory:
     def __init__(self, patterns_data: dict):
         self.data = patterns_data
@@ -746,6 +774,16 @@ class PatternFactory:
                 restart_interval = cfg.get("restart_interval", 6),
                 color            = cfg.get("color", 9),
                 life             = cfg.get("life", -1),
+            )
+
+        if typ == "random_radial":
+            return RandomRadialSpray(
+                bullet_speed = cfg.get("bullet_speed", 1.6),
+                rate        = cfg.get("rate", 2),
+                per_shot    = cfg.get("per_shot", 1),
+                color       = cfg.get("color", 7),
+                life        = cfg.get("life", -1),
+                seed        = cfg.get("seed", 0),
             )
 
         raise ValueError(f"unknown pattern: {typ}")

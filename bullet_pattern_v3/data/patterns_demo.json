@@ -158,6 +158,24 @@
     "restart_interval": 6,
     "color": 9,
     "life": -1
-  }
+  },
+    "spray360_basic": {
+      "type": "random_radial",
+      "bullet_speed": 1.6,
+      "rate": 2,
+      "per_shot": 1,
+      "color": 7,
+      "life": -1,
+      "seed": 0
+    },
+    "spray360_heavy": {
+      "type": "random_radial",
+      "bullet_speed": 1.0,
+      "rate": 1,
+      "per_shot": 2,
+      "color": 10,
+      "life": -1,
+      "seed": 1
+    }
 }
 }
