@@ -492,7 +492,6 @@ class GravityBullet(BasePattern):
 class SpeedChangePattern(BasePattern):
     """
     時間経過で“速さ”を段階変更する弾を連射。
-    steps: [{"at":30,"speed":0.2},{"at":60,"speed":0.0},{"at":90,"speed":2.5}]
     """
     def __init__(self, rate=12, speed0=1.5, angle_mode="aim", fixed_deg=90.0,
                  steps=None, color=9, life=-1):
@@ -541,6 +540,7 @@ class ProximityBurstPattern(BasePattern):
         self.life = int(life)
         self.t = 0
 
+    
     def _angle(self, em, ctx):
         if self.angle_mode == "aim":
             px, py = ctx["player_pos"]
@@ -558,6 +558,89 @@ class ProximityBurstPattern(BasePattern):
                 "once": self.once
             }
             em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.cP, life=self.life, behavior=behavior)
+        self.t += 1
+
+# === 円形 -> 停止 -> 順番に再加速（プレイヤー狙い） ======================
+class CircularStopAimed(BasePattern):
+    """
+    cooldownフレームごとに円形count発を射出。
+    各弾は spawn後 stop_at で停止し、(stop_at + resume_after + i*restart_interval)
+    にプレイヤーへ向けて再加速（index i は0..count-1）。
+    """
+    def __init__(self,
+                 count=12,
+                 cooldown=180,
+                 first_speed=1.2,
+                 stop_at=30,
+                 stop_speed=0.0,
+                 resume_after=120,
+                 resume_speed=2.4,
+                 restart_interval=6,
+                 color=9,
+                 life=-1):
+        self.count = int(count)
+        self.cd = int(cooldown)
+        self.v0 = float(first_speed)
+        self.stop_at = int(stop_at)
+        self.v_stop = float(stop_speed)
+        self.resume_after = int(resume_after)
+        self.v_resume = float(resume_speed)
+        self.re_interval = int(restart_interval)
+        self.color = int(color)
+        self.life = int(life)
+        self.t = 0
+
+    def update_and_fire(self, em, ctx):
+        # 一周ごとに円形に射出
+        if self.t % self.cd == 0:
+            step = 360.0 / self.count
+            for i in range(self.count):
+                ang_deg = i * step
+                a = deg2rad(ang_deg)
+                vx, vy = math.cos(a) * self.v0, math.sin(a) * self.v0
+
+                # 各弾に「停止→（弾ごとにズラして）再加速（aim）」のスケジュールを仕込む
+                steps = [
+                    {"at": self.stop_at, "speed": self.v_stop},
+                    {"at": self.stop_at + self.resume_after + i * self.re_interval,
+                     "speed": self.v_resume}
+                ]
+                behavior = {
+                    "type": "speed_schedule",
+                    "steps": steps,
+                    "aim_player": True   # 速度>0へ切替時にプレイヤーへ照準
+                }
+                em.bullets.spawn(
+                    em.x, em.y, vx, vy, r=1, c=self.color, life=self.life, behavior=behavior
+                )
+        self.t += 1
+
+class RandomRadialSpray(BasePattern):
+    """
+    敵中心から360度ランダム方向に連続発射するスプリンクラー系。
+    - bullet_speed: 弾速
+    - rate: 何フレームごとに撃つか（1で毎フレーム）
+    - per_shot: 1回の発射で何発出すか
+    - color: 弾の色（Pyxelカラー）
+    - life: 寿命（-1は無限）
+    - seed: 乱数シード（固定すると毎回同じ見た目）
+    """
+    def __init__(self, bullet_speed=1.6, rate=2, per_shot=1, color=7, life=-1, seed=0):
+        import random
+        self.v = float(bullet_speed)
+        self.rate = max(1, int(rate))
+        self.n = max(1, int(per_shot))
+        self.c = int(color)
+        self.life = int(life)
+        self.rng = random.Random(seed)
+        self.t = 0
+
+    def update_and_fire(self, em, ctx):
+        if self.t % self.rate == 0:
+            for _ in range(self.n):
+                ang = self.rng.random() * 2.0 * math.pi  # 0..2π の一様乱数
+                vx, vy = math.cos(ang) * self.v, math.sin(ang) * self.v
+                em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.c, life=self.life)
         self.t += 1
 
 class PatternFactory:
@@ -677,6 +760,30 @@ class PatternFactory:
                 once              = cfg.get("once", True),
                 color_parent      = cfg.get("color_parent", 11),
                 life              = cfg.get("life", -1),
+            )
+        
+        if typ == "circular_stop_aimed":
+            return CircularStopAimed(
+                count            = cfg.get("count", 12),
+                cooldown         = cfg.get("cooldown", 180),
+                first_speed      = cfg.get("first_speed", 1.2),
+                stop_at          = cfg.get("stop_at", 30),
+                stop_speed       = cfg.get("stop_speed", 0.0),
+                resume_after     = cfg.get("resume_after", 120),
+                resume_speed     = cfg.get("resume_speed", 2.4),
+                restart_interval = cfg.get("restart_interval", 6),
+                color            = cfg.get("color", 9),
+                life             = cfg.get("life", -1),
+            )
+
+        if typ == "random_radial":
+            return RandomRadialSpray(
+                bullet_speed = cfg.get("bullet_speed", 1.6),
+                rate        = cfg.get("rate", 2),
+                per_shot    = cfg.get("per_shot", 1),
+                color       = cfg.get("color", 7),
+                life        = cfg.get("life", -1),
+                seed        = cfg.get("seed", 0),
             )
 
         raise ValueError(f"unknown pattern: {typ}")
