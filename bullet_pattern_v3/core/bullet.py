@@ -4,7 +4,7 @@ import pyxel
 import math
 
 class Bullet:
-    __slots__ = ("x","y","vx","vy","r","c","alive","t","life","behavior")
+    __slots__ = ("x","y","vx","vy","r","c","alive","t","life","behavior","extra")
     def __init__(self):
         self.alive = False
         self.x = self.y = 0.0
@@ -14,6 +14,7 @@ class Bullet:
         self.t = 0
         self.life = -1        # -1 は無制限
         self.behavior = None  # dict | None
+        self.extra = {}
 
 class BulletSystem:
     def __init__(self, w, h, capacity=512):
@@ -35,6 +36,7 @@ class BulletSystem:
                 b.t = 0
                 b.life = life
                 b.behavior = behavior
+                b.extra.clear() # extraをクリア
                 return b
         return None
 
@@ -108,9 +110,20 @@ class BulletSystem:
                             b.alive = False
                             continue  # 親が消えたので位置更新へ進まず次弾へ
 
-            # 位置・寿命
-            b.x += b.vx
-            b.y += b.vy
+            # --- 位置・寿命 ---
+            # ウェーブ弾専用の処理
+            if "amp" in b.extra and "freq" in b.extra and "dir" in b.extra and "base_x" in b.extra and "base_y" in b.extra:
+                # 進行方向に沿って移動し、垂直方向にオフセット
+                perp_x = -math.sin(b.extra["dir"])
+                perp_y =  math.cos(b.extra["dir"])
+                offset = math.sin(b.t * b.extra["freq"]) * b.extra["amp"]
+                b.x = b.extra["base_x"] + b.vx * b.t + perp_x * offset
+                b.y = b.extra["base_y"] + b.vy * b.t + perp_y * offset
+            else:
+                # 通常の直進
+                b.x += b.vx
+                b.y += b.vy
+
             b.t += 1
             if b.life >= 0 and b.t >= b.life:
                 b.alive = False
@@ -118,6 +131,7 @@ class BulletSystem:
             # 画面外で消す
             if b.x < -4 or b.x > self.w + 4 or b.y < -4 or b.y > self.h + 4:
                 b.alive = False
+
 
     def draw(self):
         for b in self.pool:
