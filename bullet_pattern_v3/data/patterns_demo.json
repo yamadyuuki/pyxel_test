@@ -176,6 +176,26 @@
       "color": 10,
       "life": -1,
       "seed": 1
-    }
+    },
+    "wave_basic": {
+      "type": "wave_shot",
+      "bullet_speed": 1,
+      "rate": 8,
+      "amplitude": 6.0,
+      "frequency": 0.25,
+      "color": 8,
+      "life": -1,
+      "direction": 1.5708
+    },
+    "wave_dense": {
+      "type": "wave_shot",
+      "bullet_speed": 1,
+      "rate": 4,
+      "amplitude": 8.0,
+      "frequency": 0.35,
+      "color": 10,
+      "life": -1,
+      "direction": 1.5708
+    }    
 }
 }

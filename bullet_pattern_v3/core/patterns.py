@@ -643,6 +643,42 @@ class RandomRadialSpray(BasePattern):
                 em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.c, life=self.life)
         self.t += 1
 
+class WaveShot(BasePattern):
+    """
+    ウェーブ（正弦波）弾。
+    - bullet_speed: 前進方向の速度
+    - rate: 何フレームごとに撃つか
+    - amplitude: 揺れ幅（ピクセル単位）
+    - frequency: 揺れの速さ（sinの周波数）
+    - color: 弾の色
+    - life: 寿命（-1で無限）
+    - direction: 進行角度（ラジアン, 0で右向き）
+    """
+    def __init__(self, bullet_speed=2.0, rate=10, amplitude=5.0, frequency=0.2,
+                 color=8, life=-1, direction=math.pi/2):
+        self.v = float(bullet_speed)
+        self.rate = max(1, int(rate))
+        self.amp = float(amplitude)
+        self.freq = float(frequency)
+        self.c = int(color)
+        self.life = int(life)
+        self.dir = float(direction)
+        self.t = 0
+
+    def update_and_fire(self, em, ctx):
+        if self.t % self.rate == 0:
+            vx = math.cos(self.dir) * self.v
+            vy = math.sin(self.dir) * self.v
+            # spawnのときに extra データとして wave パラメータを持たせる
+            b = em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.c, life=self.life)
+            if b is not None:
+                b.extra["amp"] = self.amp
+                b.extra["freq"] = self.freq
+                b.extra["base_x"] = em.x
+                b.extra["base_y"] = em.y
+                b.extra["dir"] = self.dir
+        self.t += 1
+
 class PatternFactory:
     def __init__(self, patterns_data: dict):
         self.data = patterns_data
@@ -786,4 +822,14 @@ class PatternFactory:
                 seed        = cfg.get("seed", 0),
             )
 
+        if typ == "wave_shot":
+            return WaveShot(
+                bullet_speed = cfg.get("bullet_speed", 2.0),
+                rate        = cfg.get("rate", 10),
+                amplitude   = cfg.get("amplitude", 5.0),
+                frequency   = cfg.get("frequency", 0.2),
+                color       = cfg.get("color", 8),
+                life        = cfg.get("life", -1),
+                direction   = cfg.get("direction", math.pi/2),
+            )
         raise ValueError(f"unknown pattern: {typ}")
