@@ -23,7 +23,7 @@ class Emitter:
         # ここに来たら「別パターンに切替」
         # 切替時は既存弾を消してから新パターンをセット（順番はどちらでもOK）
         self.bullets.clear_all()
-        self.active = self.factory.make(name)  # Circular / AimedBurst / Spinner を生成
+        self.active = self.factory.make(name)  # 新パターンをセット
         self.active_name = name
 
     def update(self, ctx):
