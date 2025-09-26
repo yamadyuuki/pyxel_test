@@ -645,17 +645,11 @@ class RandomRadialSpray(BasePattern):
 
 class WaveShot(BasePattern):
     """
-    ウェーブ（正弦波）弾。
-    - bullet_speed: 前進方向の速度
-    - rate: 何フレームごとに撃つか
-    - amplitude: 揺れ幅（ピクセル単位）
-    - frequency: 揺れの速さ（sinの周波数）
-    - color: 弾の色
-    - life: 寿命（-1で無限）
-    - direction: 進行角度（ラジアン, 0で右向き）
+    ウェーブ（正弦波）弾。5秒ごとに発射方向をランダムに変更。
     """
     def __init__(self, bullet_speed=2.0, rate=10, amplitude=5.0, frequency=0.2,
-                 color=8, life=-1, direction=math.pi/2):
+                 color=8, life=-1, direction=math.pi/2, change_interval=300, seed=0):
+        import random
         self.v = float(bullet_speed)
         self.rate = max(1, int(rate))
         self.amp = float(amplitude)
@@ -663,13 +657,19 @@ class WaveShot(BasePattern):
         self.c = int(color)
         self.life = int(life)
         self.dir = float(direction)
+        self.change_interval = int(change_interval)  # 方向を変える間隔（フレーム数）
+        self.rng = random.Random(seed)
+
         self.t = 0
 
     def update_and_fire(self, em, ctx):
+        # 5秒ごとに新しいランダム方向に切り替え
+        if self.t % self.change_interval == 0:
+            self.dir = self.rng.uniform(0, 2.0 * math.pi)
+
         if self.t % self.rate == 0:
             vx = math.cos(self.dir) * self.v
             vy = math.sin(self.dir) * self.v
-            # spawnのときに extra データとして wave パラメータを持たせる
             b = em.bullets.spawn(em.x, em.y, vx, vy, r=1, c=self.c, life=self.life)
             if b is not None:
                 b.extra["amp"] = self.amp
@@ -677,6 +677,7 @@ class WaveShot(BasePattern):
                 b.extra["base_x"] = em.x
                 b.extra["base_y"] = em.y
                 b.extra["dir"] = self.dir
+
         self.t += 1
 
 class PatternFactory:

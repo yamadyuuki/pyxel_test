@@ -16,6 +16,7 @@ class Bullet:
         self.behavior = None  # dict | None
         self.extra = {}
 
+# 弾管理システム
 class BulletSystem:
     def __init__(self, w, h, capacity=512):
         self.w, self.h = w, h

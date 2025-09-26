@@ -196,6 +196,18 @@
       "color": 10,
       "life": -1,
       "direction": 1.5708
-    }    
+    },
+    "wave_random": {
+  "type": "wave_shot",
+  "bullet_speed": 1.5,
+  "rate": 8,
+  "amplitude": 6.0,
+  "frequency": 0.25,
+  "color": 11,
+  "life": -1,
+  "direction": 1.5708,
+  "change_interval": 180,
+  "seed": 42
+}    
 }
 }
