@@ -13,7 +13,15 @@ TILE_TO_TILETYPE = {
     (1, 1): TILE_GROUND,
 }
 
-MAP_W = 512  # タイル数
-MAP_H = 512  # タイル数
-
 BLOCKING_TYPES = {TILE_WEED, TILE_GROUND}  # 進入禁止タイル
+
+MAP_W = 512   #　マップ幅(単位:ピクセル)
+MAP_H = 256   #　マップ高さ(単位:ピクセル)
+
+
+# ===== ここから追加 =====
+GRAVITY = 0.4          # 重力の強さ（落下の加速）
+JUMP_POWER = 100.0       # ジャンプ初速（上向きはマイナスにするので使う時は -JUMP_POWER）
+MAX_FALL_SPEED = 10.0  # 落下の終端速度（速くなりすぎ防止）
+AIR_CONTROL = 1.0      # 空中での左右操作の効き具合（1.0なら地上と同じ）
+# ===== 追加ここまで =====

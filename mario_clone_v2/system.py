@@ -1,3 +1,4 @@
+#衝突判定や重力
 import pyxel as px
 from constants import TILE_SIZE, TILE_TO_TILETYPE, TILE_NONE, BLOCKING_TYPES, MAP_W, MAP_H
 
@@ -19,6 +20,8 @@ def set_tile_empty(x, y):
 
 def is_block_at(x, y):
     """その座標にブロックタイルがあるか"""
+    if x < 0 or y < 0 or x >= MAP_W  or y >= MAP_H :
+        return True
     tile_type = get_tile_type(x, y)
     
     # 通常のブロック判定
@@ -33,13 +36,42 @@ def is_block_at(x, y):
     return False
 
 def rect_hits_block(x, y, w, h):
-    """矩形がブロックタイルに重なっているか（四隅チェック）"""
-    return (
-        is_block_at(x,         y        ) or
-        is_block_at(x + w - 1, y        ) or
-        is_block_at(x,         y + h - 1) or
-        is_block_at(x + w - 1, y + h - 1)
-    )
+    """矩形がブロックタイルに重なっているか（複数点チェック）"""
+    ε = 1  # スキン幅（端ピッタリではなく内側で判定）
+
+    # 上辺チェック（左・中央・右）
+    if (
+        is_block_at(x + ε,       y)
+        or is_block_at(x + w // 2, y)
+        or is_block_at(x + w - 1 - ε, y)
+    ):
+        return True
+
+    # 下辺チェック（左・中央・右）
+    if (
+        is_block_at(x + ε,       y + h - 1)
+        or is_block_at(x + w // 2, y + h - 1)
+        or is_block_at(x + w - 1 - ε, y + h - 1)
+    ):
+        return True
+
+    # 左辺チェック（上・中央・下）
+    if (
+        is_block_at(x, y + ε)
+        or is_block_at(x, y + h // 2)
+        or is_block_at(x, y + h - 1 - ε)
+    ):
+        return True
+
+    # 右辺チェック（上・中央・下）
+    if (
+        is_block_at(x + w - 1, y + ε)
+        or is_block_at(x + w - 1, y + h // 2)
+        or is_block_at(x + w - 1, y + h - 1 - ε)
+    ):
+        return True
+
+    return False
 
 def _move_axis_pushback(x, y, w, h, delta, axis):
     """
