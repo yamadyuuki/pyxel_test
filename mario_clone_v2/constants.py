@@ -1,0 +1,19 @@
+SPEED = 2
+
+TILE_SIZE = 8
+
+TILE_NONE = 0
+TILE_GEM = 1
+TILE_WEED = 2
+TILE_GROUND = 3
+
+TILE_TO_TILETYPE = {
+    (1, 0): TILE_GEM,
+    (0, 1): TILE_WEED,
+    (1, 1): TILE_GROUND,
+}
+
+MAP_W = 512  # タイル数
+MAP_H = 512  # タイル数
+
+BLOCKING_TYPES = {TILE_WEED, TILE_GROUND}  # 進入禁止タイル
