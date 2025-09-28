@@ -3,7 +3,7 @@ import pyxel as px
 from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL
 from system import rect_move
 from system import rect_hits_block  # 足元判定に使う
-from system import check_item_collection
+from system import collect_gems_in_rect
 
 class GameObject:
     def __init__(self, x, y, img, u, v, w, h, colkey=0):
@@ -26,6 +26,8 @@ class Player(GameObject):
         self.vy = 0.0        # 縦速度（+は下向き）
         self.on_ground = False
         self.gems_collected = 0
+        # 直近で「地面だった」フレーム番号（初期は十分古い値に）
+        self.last_ground_frame = -999999
 
     def _check_on_ground(self, x, y):
         """足元1pxにブロックがあるかで接地判定"""
@@ -74,8 +76,13 @@ class Player(GameObject):
         # 横移動（縦の後に処理）
         self.x, self.y = rect_move(self.x, self.y, self.w, self.h, dx=move, dy=0)
         
-        # --- 足元の宝石を取る ---
-        check_item_collection(self)
+        # # --- 足元の宝石を取る ---
+        # check_item_collection(self)
+
+        got = collect_gems_in_rect(self.x, self.y, self.w, self.h)
+        if got > 0:
+            self.gems_collected += got
+            px.play(0,0)
 
     
     def draw(self):
