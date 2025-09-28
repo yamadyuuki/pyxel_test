@@ -225,8 +225,8 @@ class PlayScene(Scene):
     def draw(self):
         pyxel.cls(1)
         # 画面256x256pxを覆うだけのタイル数
-        tile_w = 256 // 8  # 32
-        tile_h = 256 // 8  # 32
+        tile_w = 256 
+        tile_h = 256 
         # タイルマップ0の(0,0)から 32x32 タイルぶんを (0,0) に描画
         pyxel.bltm(0, 0, 0, 0, 0, tile_w, tile_h)
 

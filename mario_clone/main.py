@@ -25,7 +25,7 @@ class SceneManager:
 
 class App:
     def __init__(self):
-        pyxel.init(256, 256, fps=60)
+        pyxel.init(256, 128, fps=60)
         pyxel.load("my_resource.pyxres")  # リソースファイルをロード
         self.scenes = SceneManager(self)
         self.scenes.register("title", TitleScene)
