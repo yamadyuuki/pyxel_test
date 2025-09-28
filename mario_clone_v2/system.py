@@ -1,6 +1,6 @@
 #衝突判定や重力
 import pyxel as px
-from constants import TILE_SIZE, TILE_TO_TILETYPE, TILE_NONE, BLOCKING_TYPES, MAP_W, MAP_H
+from constants import TILE_SIZE, TILE_TO_TILETYPE, TILE_NONE, BLOCKING_TYPES, MAP_W, MAP_H, TILE_GEM
 
 def clamp(v, lo, hi):
     return max(lo, min(v, hi))
@@ -121,3 +121,18 @@ def rect_move(x, y, w, h, dx, dy):
     return x, y
 
 
+def check_item_collection(player):
+    """プレイヤーの周囲のアイテム収集判定"""
+    # プレイヤーの周囲8点をチェック
+    for i in [0, 7, 15]:  # 上端、中央、下端
+        for j in [0, 7, 15]:  # 左端、中央、右端
+            check_x = player.x + j
+            check_y = player.y + i
+            tile_type = get_tile_type(check_x, check_y)
+
+            # 宝石の場合
+            if tile_type == TILE_GEM:
+                # 宝石を収集（タイルを空に設定）
+                set_tile_empty(check_x, check_y)
+                player.gems_collected += 1
+                px.play(0,0)  # 効果音再生（チャンネル0、サウンド0）
