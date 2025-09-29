@@ -1,6 +1,6 @@
 #衝突判定や重力
 import pyxel as px
-from constants import TILE_SIZE, TILE_TO_TILETYPE, TILE_NONE, BLOCKING_TYPES, MAP_W, MAP_H
+from constants import TILE_SIZE, TILE_TO_TILETYPE, TILE_NONE, BLOCKING_TYPES, MAP_W, MAP_H, TILE_GEM
 
 def clamp(v, lo, hi):
     return max(lo, min(v, hi))
@@ -121,3 +121,47 @@ def rect_move(x, y, w, h, dx, dy):
     return x, y
 
 
+# def check_item_collection(player):
+#     """プレイヤーの周囲のアイテム収集判定"""
+#     # プレイヤーの周囲8点をチェック
+#     for i in [0, 7, 15]:  # 上端、中央、下端
+#         for j in [0, 7, 15]:  # 左端、中央、右端
+#             check_x = player.x + j
+#             check_y = player.y + i
+#             tile_type = get_tile_type(check_x, check_y)
+
+#             # 宝石の場合
+#             if tile_type == TILE_GEM:
+#                 # 宝石を収集（タイルを空に設定）
+#                 set_tile_empty(check_x, check_y)
+#                 player.gems_collected += 1
+#                 px.play(0,0)  # 効果音再生（チャンネル0、サウンド0）
+
+def _tile_range_from_rect(x, y, w, h):
+    """ピクセル矩形 -> タイル範囲（含む）を返す（tx0..tx1, ty0..ty1）"""
+    tx0 = max(0, (x) // TILE_SIZE)
+    ty0 = max(0, (y) // TILE_SIZE)
+    tx1 = min((MAP_W - 1) // TILE_SIZE, (x + w - 1) // TILE_SIZE)
+    ty1 = min((MAP_H - 1) // TILE_SIZE, (y + h - 1) // TILE_SIZE)
+    return tx0, ty0, tx1, ty1
+
+def iter_gem_tiles_in_rect(x, y, w, h):
+    """矩形に重なるタイルのうち GEM のある (tx, ty) を列挙（副作用なし）"""
+    tx0, ty0, tx1, ty1 = _tile_range_from_rect(x, y, w, h)
+    for ty in range(ty0, ty1 + 1):
+        for tx in range(tx0, tx1 + 1):
+            u, v = px.tilemaps[0].pget(tx, ty)  # (u, v)
+            tile_type = TILE_TO_TILETYPE.get((u, v), TILE_NONE)
+            if tile_type == TILE_GEM:
+                yield tx, ty
+
+def collect_gems_in_rect(x, y, w, h):
+    """
+    矩形に重なる GEM タイルを収集して空にする。
+    戻り値: 収集した数（音などの副作用は呼び出し側に任せる）
+    """
+    count = 0
+    for tx, ty in iter_gem_tiles_in_rect(x, y, w, h):
+        px.tilemaps[0].pset(tx, ty, (0, 0))  # 空タイルに
+        count += 1
+    return count

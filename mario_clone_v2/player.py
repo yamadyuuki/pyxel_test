@@ -1,8 +1,9 @@
 # player.py
 import pyxel as px
-from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL
+from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES
 from system import rect_move
 from system import rect_hits_block  # 足元判定に使う
+from system import collect_gems_in_rect
 
 class GameObject:
     def __init__(self, x, y, img, u, v, w, h, colkey=0):
@@ -24,6 +25,9 @@ class Player(GameObject):
         self.facing = True   # false: 左向き, true: 右向き
         self.vy = 0.0        # 縦速度（+は下向き）
         self.on_ground = False
+        self.gems_collected = 0
+        # 直近で「地面だった」フレーム番号（初期は十分古い値に）
+        self.last_ground_frame = -999999
 
     def _check_on_ground(self, x, y):
         """足元1pxにブロックがあるかで接地判定"""
@@ -48,9 +52,21 @@ class Player(GameObject):
 
         # --- ジャンプ（スペース or Z で発火） ---
         # 接地中のみジャンプ。上方向は負の速度を与える。
-        if (px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE)) and self.on_ground:
+        # if (px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE)) and self.on_ground:
+        #     self.vy = -JUMP_POWER
+        #     self.on_ground = False
+
+        # --- ジャンプ（スペース or ↑キー で発火） ---
+        # 「接地中」または「直近で接地してから COYOTE_FRAMES 以内」ならジャンプ可
+        want_jump = (px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE))
+        recently_grounded = (px.frame_count - self.last_ground_frame) <= COYOTE_FRAMES
+        can_jump = self.on_ground or recently_grounded
+        if want_jump and can_jump:
             self.vy = -JUMP_POWER
             self.on_ground = False
+            # 連打で“空中でもう一回”を防ぐため、直近接地の記録を無効化しておくと安全
+            self.last_ground_frame = -999999
+
 
         # --- 実移動：Y => X の順で押し戻し付き移動 ---
         #   ・rect_move は衝突するとそれ以上進めない位置で止まる
@@ -63,6 +79,8 @@ class Player(GameObject):
             # 着地：足元にブロック → 接地＆落下速度リセット
             self.on_ground = True
             self.vy = 0.0
+            # “今まさに地面”を記録（ここがコヨーテタイムのカギ）
+            self.last_ground_frame = px.frame_count
         else:
             self.on_ground = False
             # 天井に頭をぶつけた可能性：上方向に動いた直後で頭上が埋まっていれば速度リセット
@@ -71,6 +89,14 @@ class Player(GameObject):
 
         # 横移動（縦の後に処理）
         self.x, self.y = rect_move(self.x, self.y, self.w, self.h, dx=move, dy=0)
+        
+        # # --- 足元の宝石を取る ---
+        # check_item_collection(self)
+
+        got = collect_gems_in_rect(self.x, self.y, self.w, self.h)
+        if got > 0:
+            self.gems_collected += got
+            px.play(0,0)
 
     
     def draw(self):
