@@ -35,7 +35,7 @@ class Player(GameObject):
         self.stand_u, self.stand_v = 16, 0
         self.stand_w, self.stand_h = 16, 16
         # しゃがみ姿のスプライトとサイズ（質問で提示のフレーム）
-        self.crouch_u, self.crouch_v = 32, 16
+        self.crouch_u, self.crouch_v = 32, 8
         self.crouch_w, self.crouch_h = 16, 8
         # ---- 追加ここまで ----
 
@@ -119,8 +119,8 @@ class Player(GameObject):
             px.play(0, 0)
 
 
-    
     def draw(self):
+        # 立ち/しゃがみで高さが変わるので、都度 self.h を使う
         if self.facing:
             px.blt(self.x, self.y, self.img, self.u, self.v, self.w, self.h, self.colkey)
         else:
