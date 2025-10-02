@@ -20,8 +20,13 @@ def set_tile_empty(x, y):
 
 def is_block_at(x, y):
     """その座標にブロックタイルがあるか"""
-    if x < 0 or y < 0 or x >= MAP_W  or y >= MAP_H :
+    # 画面下は落下判定のためFalseに、上と左右はTrue
+    if x < 0 or x >= MAP_W:
         return True
+    if y < 0:
+        return True
+    if y >= MAP_H:
+        return False  # 画面下は落下可能
     tile_type = get_tile_type(x, y)
     
     # 通常のブロック判定
@@ -37,7 +42,7 @@ def is_block_at(x, y):
 
 def rect_hits_block(x, y, w, h):
     """矩形がブロックタイルに重なっているか（複数点チェック）"""
-    ε = 1  # スキン幅（端ピッタリではなく内側で判定）
+    ε = 0  # スキン幅（端ピッタリではなく内側で判定）
 
     # 上辺チェック（左・中央・右）
     if (
@@ -94,9 +99,9 @@ def _move_axis_pushback(x, y, w, h, delta, axis):
         else:
             ny = y + step
 
-        # マップ外に出ないようクランプ
+        # マップ外に出ないようクランプ（上と左右のみ、下は落下判定のため制限なし）
         nx = clamp(nx, 0, MAP_W - w)
-        ny = clamp(ny, 0, MAP_H - h)
+        ny = max(0, ny)  # 上だけ制限
 
         # 次の位置で衝突するか？
         if rect_hits_block(nx, ny, w, h):
