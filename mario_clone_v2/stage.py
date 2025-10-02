@@ -9,4 +9,4 @@ class Stage:
 
     def draw(self):
         px.cls(5)
-        px.bltm(0, 0, 0, 0, 0, 512, 256, colkey=0)
+        px.bltm(0, 0, 0, 0, 0, 1024, 256, colkey=0)
