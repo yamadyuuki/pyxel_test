@@ -1,6 +1,7 @@
 # player.py
 import pyxel as px
-from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES
+from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES, JUMP_BUFFER_FRAMES
+import system
 from system import rect_move
 from system import rect_hits_block  # 足元判定に使う
 from system import collect_gems_in_rect
@@ -23,6 +24,7 @@ class Player(GameObject):
     def __init__(self, x, y):
         super().__init__(x, y, 0, 16, 0, 16, 16, 0)
         self.facing = True   # false: 左向き, true: 右向き
+        self.vx = 0.0        # 横速度
         self.vy = 0.0        # 縦速度（+は下向き）
         self.on_ground = False
         self.gems_collected = 0
@@ -38,10 +40,11 @@ class Player(GameObject):
         self.crouch_u, self.crouch_v = 32, 8
         self.crouch_w, self.crouch_h = 16, 8
         # ---- 追加ここまで ----
+        self.jump_buffer_until = -10**9
 
     def _check_on_ground(self, x, y):
         """足元1pxにブロックがあるかで接地判定"""
-        return rect_hits_block(x, y + 1, self.w, self.h)
+        return rect_hits_block((x), (y + 1), self.w, self.h)
 
     def update(self):
         # --- 横入力 ---
@@ -66,7 +69,7 @@ class Player(GameObject):
             delta_h = self.stand_h - self.h  # 立ちに戻すと増える高さ
             test_x = self.x
             test_y = self.y - delta_h  # 立ちに戻すと頭が上に伸びるので、y を上に戻した位置でテスト
-            can_stand = not rect_hits_block(test_x, test_y, self.w, self.stand_h)
+            can_stand = not rect_hits_block((test_x), (test_y), self.w, self.stand_h)
             if can_stand:
                 self.is_crouching = False
                 self.u, self.v = self.stand_u, self.stand_v
@@ -86,14 +89,29 @@ class Player(GameObject):
         if self.vy > MAX_FALL_SPEED:
             self.vy = MAX_FALL_SPEED
 
-        # --- ジャンプ（しゃがみ中は不可にする） ---
-        want_jump = (px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE))
+        # # --- ジャンプ（しゃがみ中は不可にする） ---
+        # want_jump = (px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE))
+        # recently_grounded = (px.frame_count - self.last_ground_frame) <= COYOTE_FRAMES
+        # can_jump = (self.on_ground or recently_grounded) and (not self.is_crouching)
+        # if want_jump and can_jump:
+        #     self.vy = -JUMP_POWER
+        #     self.on_ground = False
+        #     self.last_ground_frame = -999999
+
+        # ジャンプボタンが押されたらバッファタイムをセット
+        if px.btnp(px.KEY_UP) or px.btnp(px.KEY_SPACE):
+            self.jump_buffer_until = px.frame_count + JUMP_BUFFER_FRAMES
+
         recently_grounded = (px.frame_count - self.last_ground_frame) <= COYOTE_FRAMES
         can_jump = (self.on_ground or recently_grounded) and (not self.is_crouching)
-        if want_jump and can_jump:
+
+        # バッファ内かつジャンプ可能ならジャンプを実行
+        if px.frame_count <= self.jump_buffer_until and can_jump:
             self.vy = -JUMP_POWER
             self.on_ground = False
             self.last_ground_frame = -999999
+            # バッファを消費
+            self.jump_buffer_until = -10**9
 
         # --- 実移動（Y→X） ---
         new_x, new_y = rect_move(self.x, self.y, self.w, self.h, dx=0, dy=self.vy)
@@ -106,14 +124,14 @@ class Player(GameObject):
             self.last_ground_frame = px.frame_count
         else:
             self.on_ground = False
-            if self.vy < 0 and rect_hits_block(self.x, self.y - 1, self.w, self.h):
+            if self.vy < 0 and rect_hits_block((self.x), (self.y - 1), self.w, self.h):
                 self.vy = 0.0
 
         # 横移動
         self.x, self.y = rect_move(self.x, self.y, self.w, self.h, dx=move, dy=0)
 
         # アイテム回収
-        got = collect_gems_in_rect(self.x, self.y, self.w, self.h)
+        got = collect_gems_in_rect((self.x), (self.y), self.w, self.h)
         if got > 0:
             self.gems_collected += got
             px.play(0, 0)

@@ -41,6 +41,7 @@ class App:
         px.load(self.res_path)
         # シーン/プレイヤーを作り直し
         self.stage = Stage()
+        self.player = Player(self.spawn_x, self.spawn_y)
 
         self.cam_x = max(0, min(self.spawn_x - self.screen_w/2, MAP_W - self.screen_w))
         self.cam_y = max(0, min(self.spawn_y - self.screen_h/2, MAP_H - self.screen_h))
