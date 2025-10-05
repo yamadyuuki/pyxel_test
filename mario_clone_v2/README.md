@@ -49,3 +49,4 @@ Pyxelを使用したマリオ風プラットフォーマーゲーム。
 ```bash
 python main.py
 ```
+
