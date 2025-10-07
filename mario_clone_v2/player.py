@@ -4,21 +4,8 @@ from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,CO
 import system
 from system import rect_move
 from system import rect_hits_block  # 足元判定に使う
+from game_object import GameObject
 from system import collect_gems_in_rect
-
-class GameObject:
-    def __init__(self, x, y, img, u, v, w, h, colkey=0):
-        self.x = x
-        self.y = y
-        self.img = img
-        self.u = u
-        self.v = v
-        self.w = w
-        self.h = h
-        self.colkey = colkey
-    
-    def draw(self):
-        px.blt(self.x, self.y, self.img, self.u, self.v, self.w, self.h, self.colkey)
 
 class Player(GameObject):
     def __init__(self, x, y):
