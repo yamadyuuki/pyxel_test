@@ -3,13 +3,12 @@ import pyxel as px
 from player import Player
 from stage import Stage
 from constants import MAP_W, MAP_H, ENEMY_SPAWN_Y
-from enemy import Goomba
+from entity_manager import EntityManager
 
 class App:
     def __init__(self):
         px.init(256, 256, title="Mario Clone", fps=60)
         self.res_path = "my_resource.pyxres"
-        self.goomba = Goomba(50, ENEMY_SPAWN_Y)
         px.load(self.res_path)
         px.mouse(True)
 
@@ -18,6 +17,11 @@ class App:
 
         self.stage = Stage()
         self.player = Player(self.spawn_x, self.spawn_y)
+
+        # EntityManagerでクリボーを管理
+        self.entity_manager = EntityManager()
+        self.entity_manager.add_goomba(100, ENEMY_SPAWN_Y)
+        self.entity_manager.add_goomba(150, ENEMY_SPAWN_Y)
 
         self.cam_x, self.cam_y = 0, 0
         self.screen_w, self.screen_h = 256, 256
@@ -48,6 +52,11 @@ class App:
         self.stage = Stage()
         self.player = Player(self.spawn_x, self.spawn_y)
 
+        # エンティティをリセットして再追加
+        self.entity_manager.reset()
+        self.entity_manager.add_goomba(100, ENEMY_SPAWN_Y)
+        self.entity_manager.add_goomba(150, ENEMY_SPAWN_Y)
+
         self.cam_x = max(0, min(self.spawn_x - self.screen_w/2, MAP_W - self.screen_w))
         self.cam_y = max(0, min(self.spawn_y - self.screen_h/2, MAP_H - self.screen_h))
 
@@ -65,7 +74,7 @@ class App:
         if self.state == "PLAYING":
             self.player.update()
             self.stage.update()
-            self.goomba.update()
+            self.entity_manager.update_all()
             self._update_camera()
 
             # 落下判定（画面下に落ちたらゲームオーバー）
@@ -84,7 +93,7 @@ class App:
         px.camera(self.cam_x, self.cam_y)
         # ヒント表示
         self.stage.draw()
-        self.goomba.draw()
+        self.entity_manager.draw_all()
         self.player.draw()
         px.text(10, 10, "R: Reset", 7)
 
