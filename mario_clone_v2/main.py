@@ -2,12 +2,14 @@
 import pyxel as px
 from player import Player
 from stage import Stage
-from constants import MAP_W, MAP_H
+from constants import MAP_W, MAP_H, ENEMY_SPAWN_Y
+from enemy import Goomba
 
 class App:
     def __init__(self):
         px.init(256, 256, title="Mario Clone", fps=60)
         self.res_path = "my_resource.pyxres"
+        self.goomba = Goomba(50, ENEMY_SPAWN_Y)
         px.load(self.res_path)
         px.mouse(True)
 
@@ -63,6 +65,7 @@ class App:
         if self.state == "PLAYING":
             self.player.update()
             self.stage.update()
+            self.goomba.update()
             self._update_camera()
 
             # 落下判定（画面下に落ちたらゲームオーバー）
@@ -81,6 +84,7 @@ class App:
         px.camera(self.cam_x, self.cam_y)
         # ヒント表示
         self.stage.draw()
+        self.goomba.draw()
         self.player.draw()
         px.text(10, 10, "R: Reset", 7)
 
