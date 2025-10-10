@@ -1,9 +1,9 @@
 # player.py
 import pyxel as px
-from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES, JUMP_BUFFER_FRAMES
+from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES, JUMP_BUFFER_FRAMES, TILE_PLATFORM, TILE_SIZE
 import system
 from system import rect_move
-from system import rect_hits_block  # 足元判定に使う
+from system import rect_hits_block, get_tile_type  # 足元判定に使う
 from game_object import GameObject
 from system import collect_gems_in_rect
 
@@ -28,12 +28,17 @@ class Player(GameObject):
         self.crouch_w, self.crouch_h = 16, 8
         # ---- 追加ここまで ----
         self.jump_buffer_until = -10**9
+        # 前フレーム位置（上から乗った判定に使用）
+        self.prev_x = self.x
+        self.prev_y = self.y
 
     def _check_on_ground(self, x, y):
         """足元1pxにブロックがあるかで接地判定"""
         return rect_hits_block((x), (y + 1), self.w, self.h)
 
     def update(self):
+        # 前フレームの位置を保存（着地方向の判定に使用）
+        self.prev_x, self.prev_y = self.x, self.y
         # --- 横入力 ---
         base_move = (px.btn(px.KEY_RIGHT) - px.btn(px.KEY_LEFT)) * SPEED
         if not self.on_ground:
@@ -106,9 +111,40 @@ class Player(GameObject):
 
         # 縦衝突後の補正
         if self.vy >= 0 and self._check_on_ground(self.x, self.y):
-            self.on_ground = True
-            self.vy = 0.0
-            self.last_ground_frame = px.frame_count
+            # 足元のタイルをチェック
+            foot_y = self.y + self.h
+            foot_points = (
+                self.x + 1,
+                self.x + self.w // 2,
+                self.x + self.w - 2,
+            )
+            platform_contact = False
+            for fx in foot_points:
+                if get_tile_type(fx, foot_y) == TILE_PLATFORM:
+                    platform_contact = True
+                    break
+            tile_under = TILE_PLATFORM if platform_contact else get_tile_type(self.x + self.w / 2, foot_y)
+
+            if tile_under == TILE_PLATFORM:
+                # 上から乗ったときのみ発動（横・下からは無効）
+                ty_under = int((self.y + self.h) // TILE_SIZE)
+                platform_top = ty_under * TILE_SIZE
+                prev_bottom = self.prev_y + self.h - 1
+                if prev_bottom <= platform_top:
+                    # ジャンプ台なら、大ジャンプ
+                    self.vy = -JUMP_POWER * 1.5
+                    self.on_ground = False
+                    # px.play(0, 1) # ジャンプ音
+                else:
+                    # 横から触れた場合は通常床扱いしない（すり抜け防止のため接地にする）
+                    self.on_ground = True
+                    self.vy = 0.0
+                    self.last_ground_frame = px.frame_count
+            else:
+                # 通常の床
+                self.on_ground = True
+                self.vy = 0.0
+                self.last_ground_frame = px.frame_count
         else:
             self.on_ground = False
             if self.vy < 0 and rect_hits_block((self.x), (self.y - 1), self.w, self.h):

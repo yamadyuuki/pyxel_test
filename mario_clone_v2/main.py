@@ -18,10 +18,14 @@ class App:
         self.stage = Stage()
         self.player = Player(self.spawn_x, self.spawn_y)
 
-        # EntityManagerでクリボーを管理
-        self.entity_manager = EntityManager()
-        self.entity_manager.add_goomba(100, ENEMY_SPAWN_Y)
-        self.entity_manager.add_goomba(150, ENEMY_SPAWN_Y)
+        # EntityManagerでクリボーを管理（初期配置を渡す）
+        self.entity_manager = EntityManager([
+            (100, ENEMY_SPAWN_Y),
+            (150, ENEMY_SPAWN_Y),
+        ])
+
+        self.deaths = 0              # やられ回数
+        self.stage_start_frame = px.frame_count  # ステージ開始フレーム
 
         self.cam_x, self.cam_y = 0, 0
         self.screen_w, self.screen_h = 256, 256
@@ -52,13 +56,14 @@ class App:
         self.stage = Stage()
         self.player = Player(self.spawn_x, self.spawn_y)
 
-        # エンティティをリセットして再追加
+        # エンティティを初期配置に戻す
         self.entity_manager.reset()
-        self.entity_manager.add_goomba(100, ENEMY_SPAWN_Y)
-        self.entity_manager.add_goomba(150, ENEMY_SPAWN_Y)
 
         self.cam_x = max(0, min(self.spawn_x - self.screen_w/2, MAP_W - self.screen_w))
         self.cam_y = max(0, min(self.spawn_y - self.screen_h/2, MAP_H - self.screen_h))
+
+        # 経過時間リセット
+        self.stage_start_frame = px.frame_count
 
     def restart(self):
         """リトライ用：ゲームをリセットして状態をPLAYINGに戻す"""
@@ -77,9 +82,23 @@ class App:
             self.entity_manager.update_all()
             self._update_camera()
 
+            # クリボーとの当たり判定
+            collision = self.entity_manager.check_collision_with_player(self.player)
+            if collision:
+                collision_type, goomba = collision
+                if collision_type == "stomp":
+                    # 踏んだ → クリボー削除 & 小ジャンプ
+                    self.entity_manager.remove_goomba(goomba)
+                    self.player.vy = -4  # 小ジャンプ
+                elif collision_type == "hit":
+                    # 横から当たった → ゲームオーバー
+                    self.state = "GAME_OVER"
+                    self.deaths += 1
+
             # 落下判定（画面下に落ちたらゲームオーバー）
             if self.player.y > MAP_H:
                 self.state = "GAME_OVER"
+                self.deaths += 1
 
         elif self.state == "GAME_OVER":
             # リトライ処理
@@ -88,6 +107,7 @@ class App:
             elif px.btnp(px.KEY_N):
                 px.quit()
 
+
     def draw(self):
         px.cls(0)
         px.camera(self.cam_x, self.cam_y)
@@ -95,10 +115,22 @@ class App:
         self.stage.draw()
         self.entity_manager.draw_all()
         self.player.draw()
-        px.text(10, 10, "R: Reset", 7)
+
+        # UI表示（カメラ座標に固定）
+        ui_x = self.cam_x + 5
+        ui_y = self.cam_y + 5
+        px.text(ui_x, ui_y, f"GEMS: {self.player.gems_collected}", 7)
+
+        # 経過時間（秒）を計算
+        elapsed_frames = px.frame_count - self.stage_start_frame
+        timer_sec = elapsed_frames / 60
+        px.text(ui_x, ui_y + 8, f"TIME: {timer_sec:.2f}", 7)
+
+        px.text(ui_x, ui_y + 16, f"DEATHS: {self.deaths}", 7)
+        px.text(ui_x, ui_y + 24, "R: Reset", 7)
 
         # ゲームオーバー画面
-        if self.state == "GAME_OVER":
+        if self.state == "GAME_OVER":          
             px.camera()  # カメラをリセットして画面座標で描画
             # 半透明の背景
             px.rect(0, 0, self.screen_w, self.screen_h, 0)
