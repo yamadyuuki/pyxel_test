@@ -2,7 +2,7 @@
 import pyxel as px
 from player import Player
 from stage import Stage
-from constants import MAP_W, MAP_H, ENEMY_SPAWN_Y
+from constants import MAP_W, MAP_H, ENEMY_SPAWN_POSITIONS
 from entity_manager import EntityManager
 
 class App:
@@ -19,10 +19,7 @@ class App:
         self.player = Player(self.spawn_x, self.spawn_y)
 
         # EntityManagerでクリボーを管理（初期配置を渡す）
-        self.entity_manager = EntityManager([
-            (100, ENEMY_SPAWN_Y),
-            (150, ENEMY_SPAWN_Y),
-        ])
+        self.entity_manager = EntityManager(ENEMY_SPAWN_POSITIONS)
 
         self.deaths = 0              # やられ回数
         self.stage_start_frame = px.frame_count  # ステージ開始フレーム
@@ -31,7 +28,14 @@ class App:
         self.screen_w, self.screen_h = 256, 256
 
         # ゲーム状態管理
-        self.state = "PLAYING"  # "PLAYING" or "GAME_OVER"
+        # 状態: "START" -> タイトル/スタート画面表示
+        #       "PLAYING" -> ゲーム中
+        #       "PAUSED" -> ポーズ中
+        #       "GAME_OVER" -> ゲームオーバー
+        self.state = "START"
+
+        # 起動時はゲームを初期化しておく
+        self.reset_game()
 
         px.run(self.update, self.draw)
 
@@ -76,7 +80,20 @@ class App:
             self.reset_game()
             return  # このフレームの残り更新はスキップ（安全策）
 
+        if self.state == "START":
+            # スタート画面で SPACE が押されたらゲーム開始
+            if px.btnp(px.KEY_SPACE):
+                self.state = "PLAYING"
+                # ステージ開始時間を今のフレームとしてリセット
+                self.stage_start_frame = px.frame_count
+            return
+
         if self.state == "PLAYING":
+            # Pキーでポーズ
+            if px.btnp(px.KEY_P):
+                self.state = "PAUSED"
+                return
+
             self.player.update()
             self.stage.update()
             self.entity_manager.update_all()
@@ -99,6 +116,11 @@ class App:
             if self.player.y > MAP_H:
                 self.state = "GAME_OVER"
                 self.deaths += 1
+
+        elif self.state == "PAUSED":
+            # ポーズ解除
+            if px.btnp(px.KEY_P):
+                self.state = "PLAYING"
 
         elif self.state == "GAME_OVER":
             # リトライ処理
@@ -129,14 +151,46 @@ class App:
         px.text(ui_x, ui_y + 16, f"DEATHS: {self.deaths}", 7)
         px.text(ui_x, ui_y + 24, "R: Reset", 7)
 
+        # デバッグ表示（ジャンプバッファ・コヨーテタイム）
+        if self.state == "PLAYING":
+            debug_x = self.cam_x + 5
+            debug_y = self.cam_y + 40
+
+            # コヨーテタイム残りフレーム
+            coyote_remaining = max(0, (self.player.last_ground_frame + 6) - px.frame_count)
+            px.text(debug_x, debug_y, f"Coyote: {coyote_remaining}", 10 if coyote_remaining > 0 else 5)
+
+            # ジャンプバッファ残りフレーム
+            buffer_remaining = max(0, self.player.jump_buffer_until - px.frame_count)
+            px.text(debug_x, debug_y + 8, f"Buffer: {buffer_remaining}", 10 if buffer_remaining > 0 else 5)
+
+        # ポーズ画面
+        if self.state == "PAUSED":
+            px.camera()  # カメラをリセットして画面座標で描画
+            # 半透明の背景
+            px.rect(0, 0, self.screen_w, self.screen_h, 1)
+            # メッセージ表示
+            px.text(self.screen_w // 2 - 20, self.screen_h // 2 - 4, "PAUSED", 7)
+            px.text(self.screen_w // 2 - 35, self.screen_h // 2 + 8, "Press P to Resume", 7)
+
         # ゲームオーバー画面
-        if self.state == "GAME_OVER":          
+        if self.state == "GAME_OVER":
             px.camera()  # カメラをリセットして画面座標で描画
             # 半透明の背景
             px.rect(0, 0, self.screen_w, self.screen_h, 0)
             # メッセージ表示
             px.text(self.screen_w // 2 - 30, self.screen_h // 2 - 10, "GAME OVER", 8)
             px.text(self.screen_w // 2 - 40, self.screen_h // 2 + 5, "RETRY? (Y/N)", 7)
+
+        # スタート画面
+        if self.state == "START":
+            px.camera()
+            # 背景（暗め）
+            px.rect(0, 0, self.screen_w, self.screen_h, 1)
+            # タイトル
+            px.text(self.screen_w // 2 - 40, self.screen_h // 2 - 18, "MARIO CLONE", 7)
+            px.text(self.screen_w // 2 - 60, self.screen_h // 2 - 2, "Press SPACE to Start", 7)
+            px.text(self.screen_w // 2 - 70, self.screen_h // 2 + 14, "R: Reset resources (debug)", 7)
 
 if __name__ == "__main__":
     App()

@@ -1,6 +1,6 @@
 
 
-SPEED = 1.5
+SPEED = 1.5            # 移動速度（ピクセル/フレーム）
 
 TILE_SIZE = 8
 
@@ -41,3 +41,9 @@ ENEMY_W = 16        # 幅（ピクセル）
 ENEMY_H = 16        # 高さ（ピクセル）
 ENEMY_COLKEY = 0    # 透明色のキー（背景色のインデックス）
 ENEMY_SPAWN_Y = MAP_H - 40 # 敵の初期Y座標
+
+ENEMY_SPAWN_POSITIONS = [
+       (100, ENEMY_SPAWN_Y),
+       (150, ENEMY_SPAWN_Y),
+       (200, ENEMY_SPAWN_Y),
+   ]
