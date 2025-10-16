@@ -31,6 +31,7 @@ class Player(GameObject):
         # 前フレーム位置（上から乗った判定に使用）
         self.prev_x = self.x
         self.prev_y = self.y
+        self.is_dashing = False
 
     def _check_on_ground(self, x, y):
         """足元1pxにブロックがあるかで接地判定"""
@@ -41,6 +42,10 @@ class Player(GameObject):
         self.prev_x, self.prev_y = self.x, self.y
         # --- 横入力 ---
         base_move = (px.btn(px.KEY_RIGHT) - px.btn(px.KEY_LEFT)) * SPEED
+        self.is_dashing = px.btn(px.KEY_D)
+        if self.is_dashing:
+            base_move *= 1.5
+
         if not self.on_ground:
             base_move *= AIR_CONTROL
 
@@ -161,8 +166,17 @@ class Player(GameObject):
 
 
     def draw(self):
+        # ダッシュ中はカラーパレットを変更
+        if self.is_dashing:
+            # 白色(7)を赤色(8)に変更
+            px.pal(7, 8)
+
         # 立ち/しゃがみで高さが変わるので、都度 self.h を使う
         if self.facing:
             px.blt(self.x, self.y, self.img, self.u, self.v, self.w, self.h, self.colkey)
         else:
             px.blt(self.x, self.y, self.img, self.u, self.v, -self.w, self.h, self.colkey)
+
+        # カラーパレットを元に戻す
+        if self.is_dashing:
+            px.pal()

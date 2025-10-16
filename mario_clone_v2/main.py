@@ -34,6 +34,8 @@ class App:
         #       "GAME_OVER" -> ゲームオーバー
         self.state = "START"
 
+        self.debug_mode = False # デバッグモード用のフラグ
+
         # 起動時はゲームを初期化しておく
         self.reset_game()
 
@@ -75,6 +77,10 @@ class App:
         self.state = "PLAYING"
 
     def update(self):
+        # --- Qでデバッグモード切替 ---
+        if px.btnp(px.KEY_Q):
+            self.debug_mode = not self.debug_mode
+
         # --- R でリセット ---
         if px.btnp(px.KEY_R):
             self.reset_game()
@@ -137,6 +143,21 @@ class App:
         self.stage.draw()
         self.entity_manager.draw_all()
         self.player.draw()
+
+        # デバッグ用の縦線表示
+        if self.debug_mode:
+            # 100px間隔の線
+            start_x = int(self.cam_x // 100) * 100
+            end_x = int((self.cam_x + self.screen_w) // 100 + 1) * 100
+            
+            for x in range(start_x, end_x, 100):
+                if x <= 0: continue # 0以下は描画しない
+                # 点線を描画 (y方向に4pxごとに点を打つ)
+                for y in range(0, MAP_H, 4):
+                    px.pset(x, y, 6) # 薄い灰色で点を描画
+                
+                # 座標の数値を表示
+                px.text(x + 2, 10, f"{str(x)}px", 7) # 白色で数値を表示
 
         # UI表示（カメラ座標に固定）
         ui_x = self.cam_x + 5

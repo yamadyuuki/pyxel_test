@@ -43,7 +43,5 @@ ENEMY_COLKEY = 0    # 透明色のキー（背景色のインデックス）
 ENEMY_SPAWN_Y = MAP_H - 40 # 敵の初期Y座標
 
 ENEMY_SPAWN_POSITIONS = [
-       (100, ENEMY_SPAWN_Y),
-       (150, ENEMY_SPAWN_Y),
-       (200, ENEMY_SPAWN_Y),
+       (400, ENEMY_SPAWN_Y),
    ]
