@@ -9,15 +9,20 @@ TILE_GEM = 1
 TILE_WEED = 2
 TILE_GROUND = 3
 TILE_PLATFORM = 4
+TILE_QUESTION = 5
 
 TILE_TO_TILETYPE = {
     (1, 0): TILE_GEM,
     (0, 1): TILE_WEED,
     (1, 1): TILE_GROUND,
     (2, 2): TILE_PLATFORM,
+    (0, 4): TILE_QUESTION,
+    (0, 5): TILE_QUESTION,
+    (1, 4): TILE_QUESTION,
+    (1, 5): TILE_QUESTION,
 }
 
-BLOCKING_TYPES = {TILE_WEED, TILE_GROUND, TILE_PLATFORM}  # 進入禁止タイル
+BLOCKING_TYPES = {TILE_WEED, TILE_GROUND, TILE_PLATFORM, TILE_QUESTION}  # 進入禁止タイル
 
 MAP_W = 1024   #　マップ幅(単位:ピクセル)
 MAP_H = 256   #　マップ高さ(単位:ピクセル)
@@ -32,7 +37,7 @@ AIR_CONTROL = 1.0      # 空中での左右操作の効き具合（1.0なら地�
 
 COYOTE_FRAMES = 6     # コヨーテタイム（接地後もジャンプできる猶予時間、単位:フレーム）
 
-JUMP_BUFFER_FRAMES = 12 # ジャンプバッファ（ジャンプ入力を先行して受け付ける猶予時間、単位:フレーム）
+JUMP_BUFFER_FRAMES = 6 # ジャンプバッファ（ジャンプ入力を先行して受け付ける猶予時間、単位:フレーム）
 
 ENEMY_IMG = 0       # イメージバンク番号（Pyxelエディタで作った画像バンク）
 ENEMY_U = 0         # スプライト左上のx座標（ピクセル単位）

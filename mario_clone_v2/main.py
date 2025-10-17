@@ -16,10 +16,12 @@ class App:
         self.spawn_x, self.spawn_y = 30, 120
 
         self.stage = Stage()
-        self.player = Player(self.spawn_x, self.spawn_y)
 
         # EntityManagerでクリボーを管理（初期配置を渡す）
         self.entity_manager = EntityManager(ENEMY_SPAWN_POSITIONS)
+
+        # プレイヤーを作成（entity_managerを渡す）
+        self.player = Player(self.spawn_x, self.spawn_y, self.entity_manager)
 
         self.deaths = 0              # やられ回数
         self.stage_start_frame = px.frame_count  # ステージ開始フレーム
@@ -60,10 +62,12 @@ class App:
         px.load(self.res_path)
         # シーン/プレイヤーを作り直し
         self.stage = Stage()
-        self.player = Player(self.spawn_x, self.spawn_y)
 
         # エンティティを初期配置に戻す
         self.entity_manager.reset()
+
+        # プレイヤーを作成（entity_managerを渡す）
+        self.player = Player(self.spawn_x, self.spawn_y, self.entity_manager)
 
         self.cam_x = max(0, min(self.spawn_x - self.screen_w/2, MAP_W - self.screen_w))
         self.cam_y = max(0, min(self.spawn_y - self.screen_h/2, MAP_H - self.screen_h))

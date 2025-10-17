@@ -1,5 +1,6 @@
 # entity_manager.py
 from enemy import Goomba
+from effects import CoinEffect
 
 class EntityManager:
     def __init__(self, initial_goombas=None):
@@ -8,25 +9,41 @@ class EntityManager:
         """
         self.goombas = []
         self.initial_goombas = initial_goombas or []
+        self.coin_effects = []  # コインエフェクトのリスト
         self.reset()
 
     def add_goomba(self, x, y):
         """クリボーを追加"""
         self.goombas.append(Goomba(x, y))
 
+    def add_coin_effect(self, x, y):
+        """コインエフェクトを追加"""
+        self.coin_effects.append(CoinEffect(x, y))
+
     def update_all(self):
         """全てのエンティティを更新"""
         for goomba in self.goombas:
             goomba.update()
+
+        # コインエフェクトの更新と削除
+        for effect in self.coin_effects:
+            effect.update()
+        # 死んだエフェクトを削除
+        self.coin_effects = [e for e in self.coin_effects if e.alive]
 
     def draw_all(self):
         """全てのエンティティを描画"""
         for goomba in self.goombas:
             goomba.draw()
 
+        # コインエフェクトを描画
+        for effect in self.coin_effects:
+            effect.draw()
+
     def reset(self):
         """全てのエンティティをクリアして初期配置に戻す"""
         self.goombas.clear()
+        self.coin_effects.clear()  # エフェクトもクリア
         for x, y in self.initial_goombas:
             self.add_goomba(x, y)
 

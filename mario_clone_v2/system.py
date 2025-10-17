@@ -155,7 +155,7 @@ def iter_gem_tiles_in_rect(x, y, w, h):
     tx0, ty0, tx1, ty1 = _tile_range_from_rect(x, y, w, h)
     for ty in range(ty0, ty1 + 1):
         for tx in range(tx0, tx1 + 1):
-            u, v = px.tilemaps[0].pget(tx, ty)  # (u, v)
+            u, v = px.tilemaps[0].pget(tx, ty)  
             tile_type = TILE_TO_TILETYPE.get((u, v), TILE_NONE)
             if tile_type == TILE_GEM:
                 yield tx, ty

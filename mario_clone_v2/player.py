@@ -1,6 +1,6 @@
 # player.py
 import pyxel as px
-from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES, JUMP_BUFFER_FRAMES, TILE_PLATFORM, TILE_SIZE
+from constants import SPEED, GRAVITY, JUMP_POWER, MAX_FALL_SPEED, AIR_CONTROL,COYOTE_FRAMES, JUMP_BUFFER_FRAMES, TILE_PLATFORM, TILE_SIZE, TILE_QUESTION
 import system
 from system import rect_move
 from system import rect_hits_block, get_tile_type  # 足元判定に使う
@@ -8,7 +8,7 @@ from game_object import GameObject
 from system import collect_gems_in_rect
 
 class Player(GameObject):
-    def __init__(self, x, y):
+    def __init__(self, x, y, entity_manager=None):
         super().__init__(x, y, 0, 16, 0, 16, 16, 0)
         self.facing = True   # false: 左向き, true: 右向き
         self.vx = 0.0        # 横速度
@@ -17,6 +17,7 @@ class Player(GameObject):
         self.gems_collected = 0
         # 直近で「地面だった」フレーム番号（初期は十分古い値に）
         self.last_ground_frame = -999999
+        self.entity_manager = entity_manager  # エフェクト生成用
 
         # ---- ここから追加（立ち/しゃがみの定義）----
         self.is_crouching = False
@@ -153,6 +154,32 @@ class Player(GameObject):
         else:
             self.on_ground = False
             if self.vy < 0 and rect_hits_block((self.x), (self.y - 1), self.w, self.h):
+                # 頭上のタイルをチェック（ハテナブロックに当たったか）
+                head_y = self.y - 1
+                head_points = (
+                    self.x + 1,
+                    self.x + self.w // 2,
+                    self.x + self.w - 2,
+                )
+                for hx in head_points:
+                    tile_type = get_tile_type(hx, head_y)
+                    if tile_type == TILE_QUESTION:
+                        # ハテナブロックを叩いた
+                        px.play(0, 1)  # ハテナブロック音
+
+                        # ブロックの座標を計算
+                        tx = int(hx // TILE_SIZE)
+                        ty = int(head_y // TILE_SIZE)
+
+                        # コインエフェクトを生成（ブロックの中心から出現）
+                        if self.entity_manager:
+                            coin_x = tx * TILE_SIZE
+                            coin_y = ty * TILE_SIZE
+                            self.entity_manager.add_coin_effect(coin_x, coin_y)
+
+                        # ブロックを空にする（叩いた後は使用済みにする）
+                        system.set_tile_empty(hx, head_y)
+                        break
                 self.vy = 0.0
 
         # 横移動
@@ -162,7 +189,7 @@ class Player(GameObject):
         got = collect_gems_in_rect((self.x), (self.y), self.w, self.h)
         if got > 0:
             self.gems_collected += got
-            px.play(0, 0)
+            px.play(0, 0)  # アイテム取得音
 
 
     def draw(self):
