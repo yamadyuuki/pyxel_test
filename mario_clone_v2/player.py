@@ -176,7 +176,7 @@ class Player(GameObject):
                             coin_x = tx * TILE_SIZE
                             coin_y = ty * TILE_SIZE
                             self.entity_manager.add_coin_effect(coin_x, coin_y)
-
+                            self.gems_collected += 1  # コイン取得数を増やす
                         # ブロックを空にする（叩いた後は使用済みにする）
                         system.set_tile_empty(hx, head_y)
                         break
